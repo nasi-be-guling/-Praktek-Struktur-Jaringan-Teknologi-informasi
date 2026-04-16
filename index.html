@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pertemuan 11 - Manipulasi Data Dasar (Basic SQL)</title>
+
+    <!-- PROTECTION CSS -->
+    <style>
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+        }
+
+        @media print {
+            body {
+                display: none !important;
+            }
+        }
+    </style>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            margin: 0; 
+            padding: 20px 0; 
+            background-color: #cbd5e1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            gap: 30px; 
+            min-height: 100vh; 
+        }
+
+        .slide-container {
+            width: 1280px; 
+            height: 720px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Lato', sans-serif;
+            margin: 0;
+            scroll-snap-align: start;
+        }
+
+        /* Background Design */
+        .blob-1, .blob-2 { position: absolute; z-index: 0; border-radius: 50%; }
+        .blob-1 { top: -200px; right: -150px; width: 650px; height: 650px; background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0) 70%); }
+        .blob-2 { bottom: -250px; left: -200px; width: 800px; height: 800px; background: radial-gradient(circle, rgba(236, 72, 153, 0.1) 0%, rgba(236, 72, 153, 0) 70%); }
+
+        /* Typography */
+        h1, h2, h3, h4 { font-family: 'Poppins', sans-serif; color: #0f172a; margin: 0; font-weight: 700; }
+        p, li, td, th { font-family: 'Lato', sans-serif; color: #334155; font-size: 22px; line-height: 1.6; margin: 0; }
+        p { margin-bottom: 15px; }
+        
+        h1 { font-size: 64px; text-align: center; color: #0f172a; line-height: 1.2; margin-bottom: 20px; z-index: 1;}
+        .subtitle { font-size: 28px; text-align: center; color: #8b5cf6; font-weight: 700; z-index: 1;}
+        
+        .slide-title { font-size: 46px; font-weight: 900; margin-bottom: 30px; text-align: left; width: 100%; color: #0f172a; z-index: 1; border-bottom: 4px solid #8b5cf6; padding-bottom: 10px; display: inline-block; width: max-content;}
+        .slide-title i { color: #8b5cf6; margin-right: 15px; }
+        .content-area { display: flex; flex-direction: column; flex-grow: 1; width: 100%; z-index: 1; position: relative; justify-content: center; }
+
+        /* Layouts */
+        .title-layout, .section-title-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; z-index: 1; position: relative; text-align: center;}
+        .section-title-layout h2 { font-size: 72px; color: #8b5cf6; }
+        .section-title-layout p { font-size: 32px; color: #475569; margin-top: 20px;}
+        .section-title-layout hr { border: none; height: 8px; width: 150px; background-color: #ec4899; margin: 30px auto; border-radius: 4px; }
+
+        .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; width: 100%; align-items: start; }
+        .two-column.tiled > div { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 40px; box-shadow: 0 10px 15px rgba(0,0,0,0.05); height: 100%; }
+        .two-column.tiled h3 { color: #8b5cf6; font-size: 36px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px;}
+        .two-column.tiled h3 i { font-size: 40px; color: #ec4899; }
+
+        .image-right-text-left, .image-left-text-right { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; width: 100%; align-items: center; }
+        .image-wrapper { width: 100%; height: 400px; border-radius: 16px; overflow: hidden; box-shadow: 0 15px 25px rgba(0,0,0,0.1); border: 4px solid #ffffff; }
+        .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+
+        .tiled-content { display: flex; gap: 30px; width: 100%; justify-content: center; align-items: stretch; }
+        .tile { background: #ffffff; border: 2px solid #e2e8f0; border-radius: 16px; padding: 40px 30px; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: 0 10px 15px rgba(0,0,0,0.05); transition: transform 0.3s;}
+        .tile .icon { font-size: 60px; color: #8b5cf6; margin-bottom: 25px; }
+        .tile h3 { font-size: 28px; margin-bottom: 15px; color: #0f172a; }
+
+        .styled-bullet-points ul { list-style: none; padding: 0; }
+        .styled-bullet-points li { position: relative; padding-left: 50px; margin-bottom: 25px; font-size: 24px; background: #ffffff; padding-top: 15px; padding-bottom: 15px; padding-right: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border-left: 6px solid #8b5cf6;}
+        .styled-bullet-points li i { position: absolute; left: 15px; top: 18px; font-size: 24px; color: #8b5cf6; }
+
+        .quote-layout { width: 90%; margin: 0 auto; text-align: center; background: #ffffff; padding: 60px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .quote-layout blockquote { font-family: 'Poppins', sans-serif; font-size: 42px; font-weight: 700; color: #ef4444; line-height: 1.4; margin-bottom: 30px; }
+        .quote-layout cite { font-family: 'Lato', sans-serif; font-size: 24px; color: #475569; font-weight: 700; }
+
+        /* SQL Syntax Highlighting */
+        .code-block { background: #1e293b; color: #e2e8f0; padding: 30px; border-radius: 12px; font-family: 'Courier New', Courier, monospace; font-size: 26px; width: 100%; box-shadow: inset 0 4px 6px rgba(0,0,0,0.3); border-left: 8px solid #ec4899; line-height: 1.6;}
+        .code-block .kw { color: #f472b6; font-weight: bold; } /* Keyword */
+        .code-block .fn { color: #38bdf8; font-weight: bold; } /* Function/Table */
+        .code-block .str { color: #a3e635; } /* String */
+        .code-block .num { color: #fbbf24; } /* Number */
+        .code-block .op { color: #cbd5e1; } /* Operator */
+        
+        .table-layout { width: 100%; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        .table-layout table { width: 100%; border-collapse: collapse; }
+        .table-layout th, .table-layout td { padding: 18px 24px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 20px;}
+        .table-layout th { background-color: #8b5cf6; color: #ffffff; font-family: 'Poppins', sans-serif; font-weight: 700; }
+        .table-layout tr:nth-child(even) { background-color: #f8fafc; }
+        
+        .alert-box { background: #fee2e2; border-left: 8px solid #ef4444; padding: 25px; border-radius: 8px; margin-top: 20px; }
+        .alert-box h4 { color: #b91c1c; font-size: 26px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px;}
+        .alert-box p { color: #7f1d1d; font-size: 22px; margin: 0; }
+    </style>
+</head>
+
+<body>
+<div class="slide-container" id="slide1">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="title-layout">
+        <h1>Manipulasi Data Dasar <br>(Basic SQL)</h1>
+        <p class="subtitle">Memahami Bahasa Mesin di Balik Aplikasi SIMRS - Pertemuan 11</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide2">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="section-title-layout">
+        <h2>Bagian 1</h2>
+        <hr>
+        <p>Logika "Di Balik Tombol" & Konsep CRUD</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide3">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-wand-magic-sparkles"></i> Mitos "Tombol Ajaib"</h2>
+    <div class="content-area">
+        <div class="two-column tiled">
+            <div>
+                <h3><i class="fa-solid fa-desktop"></i> Yang Dilihat Perawat</h3>
+                <p>Perawat di poli mengisi formulir pendaftaran di layar komputer (Front-End).</p>
+                <p>Setelah selesai, ia mengklik tombol biru besar bertuliskan <strong>"SIMPAN DATA"</strong>. Tiba-tiba data tersimpan. Seolah-olah ada sihir (magic) di dalam tombol tersebut.</p>
+            </div>
+            <div>
+                <h3><i class="fa-solid fa-server"></i> Yang Terjadi Sebenarnya</h3>
+                <p>Tombol itu hanyalah pemicu (trigger). Saat diklik, aplikasi menerjemahkan isian formulir menjadi <strong>sebaris teks perintah rahasia</strong>.</p>
+                <p>Teks perintah inilah yang melesat melalui kabel LAN menuju Ruang Server Database untuk dieksekusi.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide4">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-code"></i> Apa itu SQL?</h2>
+    <div class="content-area">
+        <div class="image-right-text-left">
+            <div>
+                <p><strong>SQL (Structured Query Language)</strong> adalah bahasa standar internasional yang digunakan manusia dan aplikasi untuk "berbicara" dengan Database Relasional (seperti MySQL, Oracle, SQL Server).</p>
+                <p>Server Database tidak mengerti bahasa Indonesia atau klik mouse. Ia <strong>HANYA</strong> mengerti bahasa SQL.</p>
+                <p>Sebagai insinyur elektromedis/IT, Anda harus bisa menulis bahasa ini secara manual untuk mendiagnosis kerusakan data (Troubleshooting).</p>
+            </div>
+            <div class="image-wrapper">
+                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=80" alt="Layar berisi kode pemograman">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide5">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-heart-pulse"></i> Jantung Aplikasi: C-R-U-D</h2>
+    <div class="content-area">
+        <p style="text-align: center; font-size: 26px; margin-bottom: 40px;">Sebesar apapun aplikasi di dunia ini (SIMRS, Tokopedia, Instagram), 99% fungsi database-nya bermuara pada 4 operasi fundamental yang disebut <strong>CRUD</strong>.</p>
+        <div class="tiled-content">
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-plus-circle"></i></div>
+                <h3>C - Create</h3>
+                <p>Membuat/Memasukkan baris data pasien baru.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-book-open"></i></div>
+                <h3>R - Read</h3>
+                <p>Membaca, memanggil, atau memfilter data.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-pen-to-square"></i></div>
+                <h3>U - Update</h3>
+                <p>Memperbarui/mengedit data yang sudah ada.</p>
+            </div>
+            <div class="tile">
+                <div class="icon"><i class="fa-solid fa-trash-can"></i></div>
+                <h3>D - Delete</h3>
+                <p>Menghapus baris data dari database.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide6">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-language"></i> Pemetaan CRUD ke SQL</h2>
+    <div class="content-area">
+        <div class="styled-bullet-points">
+            <ul>
+                <li><i class="fa-solid fa-arrow-right"></i> <strong>CREATE</strong> diterjemahkan menjadi perintah <span style="color:#ec4899; font-weight:bold; font-family:monospace;">INSERT INTO</span></li>
+                <li><i class="fa-solid fa-arrow-right"></i> <strong>READ</strong> diterjemahkan menjadi perintah <span style="color:#ec4899; font-weight:bold; font-family:monospace;">SELECT</span></li>
+                <li><i class="fa-solid fa-arrow-right"></i> <strong>UPDATE</strong> diterjemahkan menjadi perintah <span style="color:#ec4899; font-weight:bold; font-family:monospace;">UPDATE ... SET</span></li>
+                <li><i class="fa-solid fa-arrow-right"></i> <strong>DELETE</strong> diterjemahkan menjadi perintah <span style="color:#ec4899; font-weight:bold; font-family:monospace;">DELETE FROM</span></li>
+            </ul>
+        </div>
+        <div class="alert-box">
+            <h4><i class="fa-solid fa-circle-info"></i> Info Penting</h4>
+            <p>Bahasa SQL bersifat <em>Case-Insensitive</em> (Tidak peduli huruf besar/kecil). Namun, sebagai praktik terbaik (Best Practice), semua perintah utama SQL selalu ditulis dengan <strong>HURUF KAPITAL</strong> agar mudah dibedakan dengan nama tabel.</p>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide7">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="section-title-layout">
+        <h2>Bagian 2</h2>
+        <hr>
+        <p>Membedah Sintaks CREATE & READ</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide8">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-plus-circle"></i> 1. CREATE (Insert Data)</h2>
+    <div class="content-area">
+        <p>Digunakan saat perawat mendaftarkan pasien baru di Loket Pendaftaran.</p>
+        <p><strong>Rumus Baku:</strong> Tentukan <em>nama tabel</em>, lalu sebutkan <em>nama kolomnya</em>, kemudian masukkan <em>nilainya</em> secara berurutan.</p>
+        
+        <div class="code-block">
+<span class="kw">INSERT INTO</span> <span class="fn">pasien</span> (no_rm, nama, gol_darah, umur)
+<span class="kw">VALUES</span> (<span class="str">'RM-001'</span>, <span class="str">'Budi Santoso'</span>, <span class="str">'O'</span>, <span class="num">45</span>);
+        </div>
+        
+        <div class="alert-box" style="margin-top: 30px; border-left-color: #3b82f6; background: #eff6ff;">
+            <h4 style="color: #1d4ed8;"><i class="fa-solid fa-triangle-exclamation"></i> Aturan Tipe Data</h4>
+            <p style="color: #1e3a8a;">Nilai bertipe Teks (String) <strong>WAJIB</strong> diapit tanda kutip satu (<code>'Budi'</code>). Sedangkan nilai bertipe Angka/Numerik <strong>TIDAK PERLU</strong> tanda kutip (<code>45</code>).</p>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide9">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-table"></i> Hasil Eksekusi INSERT</h2>
+    <div class="content-area">
+        <p>Jika query sebelumnya dieksekusi, database akan menambahkan satu baris (record) baru di bagian paling bawah tabel <code>pasien</code>.</p>
+        
+        <div class="table-layout" style="margin-top: 20px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>no_rm</th>
+                        <th>nama</th>
+                        <th>gol_darah</th>
+                        <th>umur</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>RM-001</td>
+                        <td>Budi Santoso</td>
+                        <td>O</td>
+                        <td>45</td>
+                    </tr>
+                    <tr>
+                        <td>RM-002</td>
+                        <td>Siti Aminah</td>
+                        <td>A</td>
+                        <td>32</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide10">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-book-open"></i> 2. READ (Select Data)</h2>
+    <div class="content-area">
+        <p>Ini adalah query yang <strong>paling sering</strong> digunakan di rumah sakit. Digunakan untuk menampilkan atau memanggil data dari gudang ke layar komputer dokter.</p>
+        
+        <div class="two-column" style="margin-top: 20px;">
+            <div>
+                <h3>Menampilkan SEMUA Kolom</h3>
+                <p style="font-size: 18px; margin-bottom: 10px;">Gunakan simbol bintang (asterisk <code>*</code>)</p>
+                <div class="code-block" style="font-size: 20px; padding: 15px;">
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">pasien</span>;
+                </div>
+            </div>
+            <div>
+                <h3>Menampilkan Kolom SPESIFIK</h3>
+                <p style="font-size: 18px; margin-bottom: 10px;">Sebutkan nama kolom yang diinginkan</p>
+                <div class="code-block" style="font-size: 20px; padding: 15px;">
+<span class="kw">SELECT</span> nama, gol_darah <br><span class="kw">FROM</span> <span class="fn">pasien</span>;
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide11">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-filter"></i> Klausa WHERE (Filter)</h2>
+    <div class="content-area">
+        <div class="image-right-text-left">
+            <div>
+                <p>Bagaimana jika tabel Anda memiliki 500.000 data pasien, dan Dokter hanya ingin mencari berkas pasien bernama "Anton"?</p>
+                <p>Menarik setengah juta data (SELECT *) akan membuat komputer <em>hang</em> (crash). Kita harus menggunakan <strong>Saringan (Filter)</strong>.</p>
+                <p>Dalam SQL, saringan tersebut bernama klausa <strong>WHERE</strong> (Di mana).</p>
+            </div>
+            <div class="image-wrapper">
+                <img src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80" alt="Ilustrasi filter data pencarian">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide12">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-magnifying-glass"></i> Contoh Penggunaan WHERE</h2>
+    <div class="content-area">
+        <p style="margin-bottom: 20px;">Operator yang bisa digunakan: <code>=</code> (sama dengan), <code>></code> (lebih dari), <code><</code> (kurang dari), <code>AND</code> (dan), <code>OR</code> (atau).</p>
+        
+        <div class="code-block" style="margin-bottom: 30px;">
+<span style="color: #64748b; font-size: 18px;">-- Mencari pasien bergolongan darah O</span>
+<span class="kw">SELECT</span> nama, umur <span class="kw">FROM</span> <span class="fn">pasien</span> 
+<span class="kw">WHERE</span> gol_darah = <span class="str">'O'</span>;
+        </div>
+
+        <div class="code-block">
+<span style="color: #64748b; font-size: 18px;">-- Mencari pasien gol. darah A yang umurnya di atas 50 tahun</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">pasien</span> 
+<span class="kw">WHERE</span> gol_darah = <span class="str">'A'</span> <span class="kw">AND</span> umur > <span class="num">50</span>;
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide13">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="section-title-layout">
+        <h2>Bagian 3</h2>
+        <hr>
+        <p>Membedah Sintaks UPDATE & DELETE</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide14">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-pen-to-square"></i> 3. UPDATE (Edit Data)</h2>
+    <div class="content-area">
+        <p>Digunakan ketika ada kesalahan ketik nama, atau pasien pindah alamat, sehingga data harus diperbarui.</p>
+        <p><strong>Rumus Baku:</strong> UPDATE (tabelnya) SET (kolom yang mau diubah) WHERE (kondisi pasien mana yang mau diubah).</p>
+        
+        <div class="code-block">
+<span class="kw">UPDATE</span> <span class="fn">pasien</span> 
+<span class="kw">SET</span> umur = <span class="num">46</span>, gol_darah = <span class="str">'AB'</span> 
+<span class="kw">WHERE</span> no_rm = <span class="str">'RM-001'</span>;
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide15">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-skull-crossbones"></i> ANCAMAN BENCANA!</h2>
+    <div class="content-area">
+        <div class="quote-layout">
+            <blockquote style="font-size: 36px;">Apa yang terjadi jika Anda lupa mengetikkan klausa <code>WHERE</code> di akhir perintah UPDATE?</blockquote>
+        </div>
+        <div class="code-block" style="margin-top: 30px; border-left-color: #ef4444; background: #450a0a;">
+<span class="kw" style="color: #f87171;">UPDATE</span> <span class="fn" style="color: #f87171;">pasien</span> <span class="kw" style="color: #f87171;">SET</span> umur = <span class="num">46</span>;
+        </div>
+        <p style="text-align: center; color: #b91c1c; font-weight: 900; font-size: 28px; margin-top: 20px;">
+            HASILNYA: SEMUA (100.000+) PASIEN DI RUMAH SAKIT AKAN BERUBAH UMURNYA MENJADI 46 TAHUN SECARA BERSAMAAN! DATA HANCUR!
+        </p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide16">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-key"></i> Penyelamat: Primary Key</h2>
+    <div class="content-area">
+        <div class="image-right-text-left">
+            <div>
+                <p>Untuk menghindari bencana salah ubah data (salah alamat), klausa WHERE pada UPDATE <strong>HARUS</strong> menggunakan penunjuk yang unik mutlak.</p>
+                <p>Jangan pernah menggunakan <code>WHERE nama = 'Budi'</code> (Karena bisa jadi ada 50 orang bernama Budi di RS).</p>
+                <p>Gunakan selalu <strong>Primary Key</strong> (Kunci Utama) seperti Nomor Rekam Medis (No_RM) sebagai target sasaran tembak UPDATE Anda!</p>
+            </div>
+            <div class="image-wrapper" style="border: none; box-shadow: none;">
+                <i class="fa-solid fa-shield-cat" style="font-size: 250px; color: #10b981; display: flex; justify-content: center; align-items: center; height: 100%;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide17">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-trash-can"></i> 4. DELETE (Hapus Data)</h2>
+    <div class="content-area">
+        <p>Digunakan untuk membuang baris data secara permanen dari database. <strong>Sama berbahayanya dengan UPDATE jika lupa memakai WHERE!</strong></p>
+        
+        <div class="code-block" style="margin-top: 20px; margin-bottom: 20px;">
+<span class="kw">DELETE FROM</span> <span class="fn">pasien</span> 
+<span class="kw">WHERE</span> no_rm = <span class="str">'RM-002'</span>;
+        </div>
+
+        <div class="alert-box" style="border-left-color: #f59e0b; background: #fef3c7;">
+            <h4 style="color: #b45309;"><i class="fa-solid fa-lightbulb"></i> Best Practice Rumah Sakit</h4>
+            <p style="color: #92400e;">Di dunia kesehatan sesungguhnya, data rekam medis <strong>haram hukumnya</strong> untuk di-DELETE permanen (Hard Delete) karena alasan riwayat hukum. Developer SIMRS biasanya hanya melakukan "Soft Delete" (Mengubah status kolom 'is_active' menjadi 0) agar data hilang dari layar tapi tetap ada di database.</p>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide18">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="section-title-layout">
+        <h2>Bagian 4</h2>
+        <hr>
+        <p>Skenario Praktikum (Lab XAMPP)</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide19">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-laptop-code"></i> Cara Mengeksekusi Query</h2>
+    <div class="content-area">
+        <p style="text-align: center; margin-bottom: 30px;">Buka <code>http://localhost/phpmyadmin</code>, klik database <code>db_rssehat</code> yang sudah Anda buat minggu lalu, lalu klik Tab <strong>SQL</strong> di bagian atas layar.</p>
+        <div class="image-wrapper" style="height: 350px;">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" alt="Layar berisi tab SQL dashboard database">
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide20">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-gavel"></i> Aturan Main Praktikum</h2>
+    <div class="content-area">
+        <div class="styled-bullet-points">
+            <ul>
+                <li><i class="fa-solid fa-ban" style="color: #ef4444;"></i> <strong>DILARANG KLIK TOMBOL GUI (Insert/Edit/Delete)!</strong><br> <span style="font-size: 20px; color: #64748b;">Hari ini Anda adalah Administrator Database sejati. Semua manipulasi data wajib diketik manual menggunakan perintah SQL di tab "SQL".</span></li>
+                <li><i class="fa-solid fa-check-circle" style="color: #10b981;"></i> <strong>Gunakan Titik Koma (;)</strong><br> <span style="font-size: 20px; color: #64748b;">Akhiri setiap perintah SQL Anda dengan tanda <code>;</code> sebagai penutup baris.</span></li>
+                <li><i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> <strong>Hati-Hati Typo!</strong><br> <span style="font-size: 20px; color: #64748b;">Satu huruf salah ketik pada nama tabel akan menghasilkan pesan Error berwarna merah (Syntax Error).</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide21">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-1"></i> Misi 1: Registrasi 3 Pasien</h2>
+    <div class="content-area">
+        <p>Ketikkan kode berikut di tab SQL lalu klik tombol "Go" di pojok kanan bawah. Ini akan melakukan <em>Multiple Insert</em> (Memasukkan 3 data sekaligus).</p>
+        
+        <div class="code-block" style="font-size: 22px;">
+<span class="kw">INSERT INTO</span> <span class="fn">pasien</span> (no_rm, nama, umur, gol_darah)
+<span class="kw">VALUES</span> 
+(<span class="str">'RM-111'</span>, <span class="str">'Ahmad Dani'</span>, <span class="num">35</span>, <span class="str">'O'</span>),
+(<span class="str">'RM-222'</span>, <span class="str">'Susi Susanti'</span>, <span class="num">28</span>, <span class="str">'AB'</span>),
+(<span class="str">'RM-333'</span>, <span class="str">'Joko Widodo'</span>, <span class="num">60</span>, <span class="str">'B'</span>);
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide22">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-2"></i> Misi 2: Pemanggilan Data</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div>
+                <p>Tugas A: Tampilkan seluruh pasien yang ada di gudang data.</p>
+                <div class="code-block" style="font-size: 20px;">
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> <span class="fn">pasien</span>;
+                </div>
+            </div>
+            <div>
+                <p>Tugas B: Direktur hanya ingin melihat nama dan umur pasien yang umurnya di atas 30 tahun.</p>
+                <div class="code-block" style="font-size: 20px;">
+<span class="kw">SELECT</span> nama, umur <span class="kw">FROM</span> <span class="fn">pasien</span>
+<span class="kw">WHERE</span> umur > <span class="num">30</span>;
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide23">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-3"></i> Misi 3: Revisi (Update)</h2>
+    <div class="content-area">
+        <p>Terjadi kesalahan petugas pendaftaran. Ternyata umur Ibu Susi Susanti (RM-222) bukanlah 28 tahun, melainkan 29 tahun. Perbaiki datanya!</p>
+        
+        <div class="code-block" style="margin-top: 20px; font-size: 24px;">
+<span class="kw">UPDATE</span> <span class="fn">pasien</span> 
+<span class="kw">SET</span> umur = <span class="num">29</span> 
+<span class="kw">WHERE</span> no_rm = <span class="str">'RM-222'</span>;
+        </div>
+        <p style="margin-top: 20px; text-align: center;">Setelah di-run, lakukan <code>SELECT * FROM pasien;</code> lagi untuk memastikan datanya berubah!</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide24">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <h2 class="slide-title"><i class="fa-solid fa-4"></i> Misi 4: Penghapusan (Delete)</h2>
+    <div class="content-area">
+        <p>Data Bapak Joko Widodo (RM-333) ternyata adalah data tes (dummy) dan harus dihapus dari sistem rumah sakit. Eksekusi pemusnahan datanya!</p>
+        
+        <div class="code-block" style="margin-top: 20px; font-size: 24px;">
+<span class="kw">DELETE FROM</span> <span class="fn">pasien</span> 
+<span class="kw">WHERE</span> no_rm = <span class="str">'RM-333'</span>;
+        </div>
+        
+        <p style="margin-top: 20px; text-align: center;">Cek kembali tabel Anda, baris data RM-333 seharusnya sudah musnah.</p>
+    </div>
+</div>
+
+<div class="slide-container" id="slide25">
+    <div class="blob-1"></div>
+    <div class="blob-2"></div>
+    <div class="title-layout">
+        <i class="fa-solid fa-code" style="font-size: 100px; color: #8b5cf6; margin-bottom: 30px;"></i>
+        <h1>Selamat Berlatih di Laboratorium!</h1>
+        <p class="subtitle">"Satu baris SQL Anda menggerakkan seluruh sistem Rumah Sakit."</p>
+        <p style="margin-top: 40px; font-size: 24px;">Buka Moodle untuk melihat Instruksi Penugasan Pertemuan 11.</p>
+    </div>
+</div>
+<!-- ================== KONTEN ASLI KAMU ================== -->
+<!-- (SEMUA ISI HTML KAMU TETAP, TIDAK PERLU DIUBAH) -->
+
+
+<!-- ================== PROTECTION SCRIPT ================== -->
+<script>
+// Disable klik kanan
+document.addEventListener('contextmenu', e => e.preventDefault());
+
+// Disable select
+document.addEventListener('selectstart', e => e.preventDefault());
+
+// Disable drag
+document.addEventListener('dragstart', e => e.preventDefault());
+
+// Disable copy/cut/paste
+['copy','cut','paste'].forEach(evt => {
+    document.addEventListener(evt, e => e.preventDefault());
+});
+
+// Disable shortcut
+document.addEventListener('keydown', function(e) {
+    if (
+        (e.ctrlKey && ['c','u','s','p','a'].includes(e.key.toLowerCase())) ||
+        (e.ctrlKey && e.shiftKey && ['i','j'].includes(e.key.toLowerCase())) ||
+        (e.key === 'F12')
+    ) {
+        e.preventDefault();
+    }
+});
+
+// Disable print (JS)
+window.onbeforeprint = function() {
+    document.body.innerHTML = "Printing is disabled!";
+};
+
+</script>
+
+</body>
+</html>
